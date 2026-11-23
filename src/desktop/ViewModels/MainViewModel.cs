@@ -181,7 +181,7 @@ namespace HanVGamepad.Desktop.ViewModels
             : Strings.T(Language, "addr.show");
 
         /// <summary>
-        /// 地址卡拆两段显示：IP 用正文色，端口单独着色。
+        /// 地址卡拆两段显示：IP 用正文色，端口号单独着色（冒号不算在内）。
         /// 复制和二维码仍然用整串 AddressText，别改成只复制主机。
         /// </summary>
         public string AddressHostText => SplitAddress().Host;
@@ -193,7 +193,7 @@ namespace HanVGamepad.Desktop.ViewModels
             int split = AddressText.LastIndexOf(':');
             return split < 0
                 ? (AddressText, string.Empty)
-                : (AddressText[..split], AddressText[split..]);
+                : (AddressText[..split], AddressText[(split + 1)..]);
         }
 
         public int OnlineCount => Slots.Count(s => s.Occupied);

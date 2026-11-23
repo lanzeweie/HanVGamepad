@@ -313,10 +313,13 @@
           <!-- 行 1：地址 + 复制 / 端口 / 密码 / 状态提示 -->
           <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="10"
                       VerticalAlignment="Center">
-            <!-- 地址拆成 IP + 端口两段：端口单独上色，扫一眼就知道连的是哪个口 -->
+            <!-- 地址拆成 IP / 冒号 / 端口：只有端口号上色，冒号跟 IP 一样走正文色 -->
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
               <TextBlock Text="{Binding AddressHostText}" FontSize="28" FontWeight="Bold"
                          Classes="value" VerticalAlignment="Center"/>
+              <TextBlock Text=":" FontSize="28" FontWeight="Bold" Classes="value"
+                         VerticalAlignment="Center"
+                         IsVisible="{Binding AddressText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
               <TextBlock Text="{Binding AddressPortText}" FontSize="28" FontWeight="Bold"
                          Foreground="{DynamicResource AppPortBrush}" VerticalAlignment="Center"/>
             </StackPanel>

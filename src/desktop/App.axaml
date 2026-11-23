@@ -27,8 +27,8 @@
           <SolidColorBrush x:Key="AppDangerBrush" Color="#D93B41"/>
           <SolidColorBrush x:Key="AppOnlineBrush" Color="#2F9E5B"/>
           <SolidColorBrush x:Key="AppIdleBrush" Color="#AEB4BD"/>
-          <!-- 端口着重色：白底上用深一点的黄，纯黄在浅色底上直接糊成一片 -->
-          <SolidColorBrush x:Key="AppPortBrush" Color="#B8860B"/>
+          <!-- 端口着重色：白底上用饱和黄，不用发褐的深黄 -->
+          <SolidColorBrush x:Key="AppPortBrush" Color="#FFC400"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
@@ -44,7 +44,7 @@
           <SolidColorBrush x:Key="AppDangerBrush" Color="#F0595E"/>
           <SolidColorBrush x:Key="AppOnlineBrush" Color="#3FBF74"/>
           <SolidColorBrush x:Key="AppIdleBrush" Color="#5A6069"/>
-          <SolidColorBrush x:Key="AppPortBrush" Color="#FFC83D"/>
+          <SolidColorBrush x:Key="AppPortBrush" Color="#FFD60A"/>
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>

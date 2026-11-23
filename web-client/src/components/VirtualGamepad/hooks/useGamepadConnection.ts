@@ -20,6 +20,11 @@ interface UseGamepadConnectionProps {
 const CLIENT_ID_KEY = 'gamepad_client_id';
 const HUB_PATH = '/gamepadhub';
 
+// 延迟采样：每 2s 打一次 Ping，显示取最近若干次里最小的那个。
+// 排队、主线程卡顿都只会把单次往返抬高，最小值才更接近链路真实 RTT。
+const PING_INTERVAL_MS = 2000;
+const PING_WINDOW_SIZE = 8;
+
 const createClientId = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
@@ -78,6 +83,7 @@ export const useGamepadConnection = ({
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
   const pingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pingSamplesRef = useRef<number[]>([]);
   const connectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const authFailedRef = useRef(false);
 
@@ -99,6 +105,7 @@ export const useGamepadConnection = ({
 
   const stopPing = () => {
     if (pingRef.current) { clearInterval(pingRef.current); pingRef.current = null; }
+    pingSamplesRef.current = [];
   };
 
   const stopConnectTimer = () => {
@@ -168,9 +175,10 @@ export const useGamepadConnection = ({
       stopPing();
       pingRef.current = setInterval(() => {
         if (dcRef.current?.readyState === 'open') {
-          dcRef.current.send(`Ping:${Date.now()}`);
+          // 单调时钟：Date.now() 会被系统校时挪动，一挪就凭空多出几十毫秒。
+          dcRef.current.send(`Ping:p${performance.now()}`);
         }
-      }, 2000);
+      }, PING_INTERVAL_MS);
     };
     dc.onclose = () => {
       if (dcRef.current !== dc) return;
@@ -183,8 +191,17 @@ export const useGamepadConnection = ({
     dc.onmessage = (event) => {
       const msg = typeof event.data === 'string' ? event.data : '';
       if (msg.startsWith('Pong:')) {
-        const sent = parseInt(msg.substring(5), 10);
-        if (!isNaN(sent)) setLatency(Date.now() - sent);
+        // 服务端只把时间戳原样回传，拿到的就是本机 performance.now()。
+        const sent = parseFloat(msg.substring(5).replace(/^p/, ''));
+        if (Number.isFinite(sent)) {
+          const rtt = performance.now() - sent;
+          if (rtt > 0 && rtt < 5000) {
+            const samples = pingSamplesRef.current;
+            samples.push(rtt);
+            if (samples.length > PING_WINDOW_SIZE) samples.shift();
+            setLatency(Math.round(Math.min(...samples)));
+          }
+        }
       } else {
         const parts = msg.split(':');
         if (parts[0] === 'V') {
