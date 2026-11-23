@@ -1,6 +1,7 @@
 # HanVGamepad
 
-English | [简体中文](README.zh.md)
+![English](https://img.shields.io/badge/Language-English-2f9e5b?style=flat-square)
+[![简体中文](https://img.shields.io/badge/Language-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-8b949e?style=flat-square)](README.zh.md)
 
 Turn any smartphone browser into a virtual PC gamepad. With the phone and PC on
 the same Wi-Fi / LAN, open the host address in the phone browser and it works as
@@ -21,12 +22,26 @@ through OpenJoystickDriver).
 - **Zero-install client**: works in iOS Safari / Android Chrome / desktop browsers
 - **Desktop control panel**: service status / QR code / slot management / driver management / i18n (Chinese, English, Arabic)
 - **CLI mode**: run headless from the command line
+- **Editable on-screen layout**: drag the buttons where your thumbs want them, plus a hitbox debug view, button/stick sensitivity slider, vibration toggle and fullscreen
+- **Trilingual client**: Simplified Chinese / English / Arabic
 
 ## Screenshots
 
-| Host control panel | Phone client |
+### Host panel
+
+The LAN address with its QR code, four controller slots, driver management and a
+light/dark switch — the host side in one window:
+
+![Host control panel](README/服务端英文页面.jpg)
+
+### Phone client
+
+Scanning the QR code opens the phone page: pick the controller type, connect, and play
+in landscape:
+
+| Connect | Landscape gamepad |
 |:---:|:---:|
-| ![Host control panel](README/服务端英文页面.jpg) | ![Phone client](README/客户端登录界面-英文.jpg) |
+| ![Connect page](README/客户端登录界面-英文.jpg) | ![Landscape gamepad](README/客户端手柄UI-us.jpg) |
 
 ## Getting started
 
@@ -132,7 +147,6 @@ HanVGamepad/
 │   ├── desktop/    Avalonia UI control panel (Windows + Linux + macOS)
 │   └── cli/        Headless console entry point
 ├── web-client/     Mobile React SPA (build output embedded into the host wwwroot)
-├── docs/           Architecture / protocol / driver setup docs
 ├── packaging/      Per-platform packaging scripts
 └── tests/          Test projects
 ```

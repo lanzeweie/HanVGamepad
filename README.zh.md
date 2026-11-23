@@ -1,6 +1,7 @@
 # HanVGamepad
 
-[English](README.md) | 简体中文
+[![English](https://img.shields.io/badge/Language-English-8b949e?style=flat-square)](README.md)
+![简体中文](https://img.shields.io/badge/Language-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-2f9e5b?style=flat-square)
 
 把任意智能手机的浏览器变成 PC 虚拟手柄。手机与电脑连同一 Wi-Fi / 局域网，
 手机浏览器打开宿主地址即可作为 Xbox 360 / DualShock 4 虚拟手柄使用，
@@ -19,12 +20,24 @@
 - **零安装客户端**：iOS Safari / Android Chrome / 桌面浏览器直接访问
 - **桌面管理面板**：服务状态 / QR 扫码 / 槽位管理 / 驱动管理 / 多语言（中/英/阿）
 - **CLI 模式**：headless 场景下以命令行运行服务
+- **屏幕布局可编辑**：按键拖到顺手指的位置，另有触摸区调试视图、按键/摇杆灵敏度滑杆、振动开关与全屏切换
+- **手机页面多语言**：简体中文 / English / العربية
 
 ## 界面截图
 
-| 服务端管理面板 | 手机客户端 |
+### 服务端面板
+
+局域网地址与二维码、四路手柄槽位、驱动管理、明暗主题开关——宿主侧一个窗口看全：
+
+![服务端管理面板](README/服务端中文页面.jpg)
+
+### 手机客户端
+
+扫码打开手机页面，选好手柄类型点连接，横屏就能玩：
+
+| 连接页 | 横屏手柄 |
 |:---:|:---:|
-| ![服务端管理面板](README/服务端中文页面.jpg) | ![手机客户端](README/客户端登录界面.jpg) |
+| ![连接页](README/客户端登录界面.jpg) | ![横屏手柄](README/客户端手柄UI-zh.jpg) |
 
 ## 启动方法
 
@@ -128,7 +141,6 @@ HanVGamepad/
 │   ├── desktop/    Avalonia UI 管理面板（Windows + Linux + macOS）
 │   └── cli/        无 UI 控制台入口
 ├── web-client/     移动端 React SPA（构建产物内嵌到宿主 wwwroot）
-├── docs/           架构 / 协议 / 驱动安装文档
 ├── packaging/      各平台打包脚本
 └── tests/          测试项目
 ```
