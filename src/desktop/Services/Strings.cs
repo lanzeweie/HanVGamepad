@@ -99,7 +99,7 @@ namespace HanVGamepad.Desktop.Services
 
                 // 系统弹窗
                 ["dialog.driverRequired.title"] = ("缺少虚拟手柄驱动", "Gamepad driver required", "مطلوب تعريف ذراع التحكم"),
-                ["dialog.driverRequired.text"] = ("需安装虚拟手柄驱动后方可启动服务并正常使用。是否立即安装？", "The virtual gamepad driver is required to start the server and use it normally. Install it now?", "يلزم تثبيت تعريف ذراع التحكم لتشغيل الخادم واستخدامه بشكل طبيعي. هل تريد التثبيت الآن؟"),
+                ["dialog.driverRequired.text"] = ("需安装虚拟手柄驱动后方可启动服务并正常使用。点击「安装驱动」会打开 ViGEmBus 官方安装程序，请在向导中阅读并同意许可协议后完成安装。", "The virtual gamepad driver is required to start the server. \"Install driver\" opens the official ViGEmBus setup wizard — review and accept its license there to finish the installation.", "يلزم تثبيت تعريف ذراع التحكم لتشغيل الخادم. سيؤدي «تثبيت التعريف» إلى فتح برنامج تثبيت ViGEmBus الرسمي — راجع اتفاقية الترخيص ووافق عليها هناك لإكمال التثبيت."),
                 ["dialog.driverRequired.install"] = ("安装驱动", "Install driver", "تثبيت التعريف"),
                 ["dialog.driverRequired.cancel"] = ("取消", "Cancel", "إلغاء"),
                 ["dialog.ojdRequired.title"] = ("需要 OpenJoystickDriver", "OpenJoystickDriver required", "مطلوب OpenJoystickDriver"),

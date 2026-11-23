@@ -8,8 +8,9 @@ namespace HanVGamepad.Driver.Windows
 {
     /// <summary>
     /// Windows 驱动管理器（ViGEmBus v1.22.0）。
-    /// 检测走注册表 + 服务控制器；安装走内嵌安装器（runas 提权、静默参数、180 秒超时）；
-    /// 卸载走安装器 /uninstall（同样需要 UAC）。
+    /// 检测走注册表 + 服务控制器；安装走内嵌安装器：提权后显示 ViGEmBus 自己的安装向导，
+    /// 由用户在向导里读到并同意许可协议后才真正安装——不做静默安装，驱动分发与商店审核都要求显式同意。
+    /// 卸载走系统登记的那个卸载器（同样需要 UAC）。
     /// </summary>
     [SupportedOSPlatform("windows")]
     internal sealed class WindowsDriverManager : IDriverManager
@@ -18,7 +19,15 @@ namespace HanVGamepad.Driver.Windows
         private const string ServiceName = "ViGEmBus";
         private const string InstallerFileName = "ViGEmBus_1.22.0_x64_x86_arm64.exe";
         private const string InstallerResourceSuffix = "ViGEmBus_1.22.0_x64_x86_arm64.exe";
-        private const int InstallTimeoutMs = 180_000;
+
+        /// <summary>卸载器是无人值守的，超时按失败处理。</summary>
+        private const int UninstallTimeoutMs = 180_000;
+
+        /// <summary>交互式安装在等人：用户在向导里看协议、点下一步，给足十分钟。</summary>
+        private const int InteractiveInstallTimeoutMs = 600_000;
+
+        /// <summary>Windows Installer：用户在安装向导里点了取消。</summary>
+        private const int ErrorInstallUserExit = 1602;
 
         public Task<DriverStatus> GetStatusAsync(CancellationToken ct = default)
         {
@@ -275,15 +284,16 @@ namespace HanVGamepad.Driver.Windows
                 Directory.CreateDirectory(Path.GetDirectoryName(tempExePath)!);
                 await ExtractInstallerAsync(tempExePath, ct);
 
-                // 2. 以 runas 触发 UAC，静默安装。
-                progress?.Report("Launching the installer with elevation (confirm the UAC prompt)...");
-                int? exitCode = await RunInstallerAsync(tempExePath, "/quiet /norestart", ct);
+                // 2. 提权后显示 ViGEmBus 自己的安装向导（不带 /quiet）：许可协议必须由用户本人
+                //    在向导里确认，静默安装既不透明，过不了驱动分发与商店审核。
+                progress?.Report("Opening the ViGEmBus setup wizard — accept its license and finish the wizard to continue.");
+                int? exitCode = await RunInstallerAsync(tempExePath, "/norestart", ct, InteractiveInstallTimeoutMs);
 
                 if (exitCode == null)
                 {
-                    // 安装器可能仍在运行：不删临时文件。
+                    // 安装器可能仍在运行（用户还停在向导里）：不删临时文件。
                     return new DriverInstallResult(false, false,
-                        "The installer did not exit within 180 seconds. Check whether security software is blocking it.");
+                        "The ViGEmBus setup wizard did not finish within 10 minutes. Finish or cancel it manually, then refresh the driver status.");
                 }
 
                 // 3. 重新检测注册表确认。
@@ -293,6 +303,13 @@ namespace HanVGamepad.Driver.Windows
                     try { File.Delete(tempExePath); } catch { /* 清理失败不影响结果 */ }
                     progress?.Report("ViGEmBus driver installed successfully.");
                     return new DriverInstallResult(true, false, null);
+                }
+
+                if (exitCode == ErrorInstallUserExit)
+                {
+                    CleanupTemp(tempExePath);
+                    return new DriverInstallResult(false, false,
+                        "The ViGEmBus setup wizard was cancelled, so the driver is still not installed.");
                 }
 
                 string error = ParseInstallerFailure(tempExePath);
@@ -331,7 +348,7 @@ namespace HanVGamepad.Driver.Windows
         }
 
         /// <summary>跑安装器/卸载器；返回退出码，超时或被取消返回 null。</summary>
-        private static async Task<int?> RunInstallerAsync(string exePath, string arguments, CancellationToken ct)
+        private static async Task<int?> RunInstallerAsync(string exePath, string arguments, CancellationToken ct, int timeoutMs)
         {
             var psi = new ProcessStartInfo
             {
@@ -350,7 +367,7 @@ namespace HanVGamepad.Driver.Windows
 
             // 安装器不能无限期挂着：超时按失败处理，但保留临时文件（安装器可能仍在运行）。
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            timeout.CancelAfter(InstallTimeoutMs);
+            timeout.CancelAfter(timeoutMs);
 
             try
             {
@@ -412,7 +429,7 @@ namespace HanVGamepad.Driver.Windows
 
                 (string fileName, string arguments) = ParseUninstallCommand(command);
 
-                int? exitCode = await RunInstallerAsync(fileName, arguments, ct);
+                int? exitCode = await RunInstallerAsync(fileName, arguments, ct, UninstallTimeoutMs);
                 if (exitCode == null)
                 {
                     return new DriverUninstallResult(false,
