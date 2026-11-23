@@ -1,161 +1,187 @@
 # HanVGamepad
 
-把任意智能手机的浏览器变成 PC 虚拟手柄。手机与电脑连同一 Wi-Fi / 局域网，
-手机浏览器打开宿主地址即可作为 Xbox 360 / DualShock 4 虚拟手柄使用，
-输入通过 WebRTC DataChannel 低延迟传输，支持振动反馈、4 槽位多人、
-断线槽位记忆与密码保护。
+English | [简体中文](README.zh.md)
 
-支持 Windows（ViGEmBus）、Linux（uinput）与 macOS（通过 OpenJoystickDriver 输出）三平台宿主。
+Turn any smartphone browser into a virtual PC gamepad. With the phone and PC on
+the same Wi-Fi / LAN, open the host address in the phone browser and it works as
+an Xbox 360 / DualShock 4 virtual controller. Input travels over a WebRTC
+DataChannel with low latency, with rumble feedback, four player slots,
+disconnect slot memory, and password protection.
 
-## 功能
+Hosts are available for Windows (ViGEmBus), Linux (uinput), and macOS (output
+through OpenJoystickDriver).
 
-- **跨平台宿主**：Windows / Linux / macOS
-- **低延迟输入**：SignalR 信令 + WebRTC DataChannel，局域网端到端延迟 < 30ms
-- **4 个手柄槽位**：多人同乐，断线自动释放、重连认回原槽位（设备码 / IP 记忆）
-- **两种手柄类型**：Xbox 360 / DualShock 4（Linux 端与 macOS 端以 Xbox 360 映射工作）
-- **振动反馈**：游戏振动实时回传手机（Windows 与 macOS）
-- **零安装客户端**：iOS Safari / Android Chrome / 桌面浏览器直接访问
-- **桌面管理面板**：服务状态 / QR 扫码 / 槽位管理 / 驱动管理 / 多语言（中/英/阿）
-- **CLI 模式**：headless 场景下以命令行运行服务
+## Features
 
-## 启动方法
+- **Cross-platform host**: Windows / Linux / macOS
+- **Low-latency input**: SignalR signaling + WebRTC DataChannel, < 30ms end-to-end on LAN
+- **Four gamepad slots**: local multiplayer; slots are released on disconnect and reclaimed by device code / IP memory
+- **Two controller types**: Xbox 360 / DualShock 4 (Linux and macOS hosts map to Xbox 360)
+- **Rumble feedback**: game vibration forwarded to the phone in real time (Windows and macOS)
+- **Zero-install client**: works in iOS Safari / Android Chrome / desktop browsers
+- **Desktop control panel**: service status / QR code / slot management / driver management / i18n (Chinese, English, Arabic)
+- **CLI mode**: run headless from the command line
 
-### 前置：构建
+## Getting started
+
+### Prerequisites: build
 
 ```powershell
-# 后端（.NET 10）
+# Backend (.NET 10)
 dotnet build HanVGamepad.slnx
 
-# 移动端页面（产物输出到 src/desktop/wwwroot/）
+# Mobile page (outputs to src/desktop/wwwroot/)
 cd web-client
 npm install
 npm run build
 ```
 
-### Windows 桌面面板
+### Windows desktop panel
 
 ```powershell
 dotnet run --project src/desktop
 ```
 
-1. 首次使用在「驱动管理」区点「安装驱动」（弹出 UAC 提权，安装 ViGEmBus）
-2. 点「启动服务」
-3. 手机扫描面板二维码（或手动输入地址），选手柄类型，点连接
+1. On first use, click "Install driver" in the Driver Management section (UAC prompt; installs ViGEmBus).
+2. Click "Start service".
+3. Scan the QR code on the panel (or enter the address manually), pick a controller type, and connect.
 
-### CLI（headless / 开发调试）
+### CLI (headless / development)
 
 ```powershell
 dotnet run --project src/cli -- start --port 5000 --password ""
 ```
 
 ```text
-hanvgamepad start [--port <1-65535>] [--password <pwd>]   前台运行服务（Ctrl+C 停止）
-hanvgamepad stop                                          停止后台实例
-hanvgamepad status                                        查看服务与驱动状态
-hanvgamepad driver status|install|uninstall               驱动管理
+hanvgamepad start [--port <1-65535>] [--password <pwd>]   Run the service in the foreground (Ctrl+C to stop)
+hanvgamepad stop                                          Stop the background instance
+hanvgamepad status                                        Show service and driver status
+hanvgamepad driver status|install|uninstall               Driver management
 ```
 
 ### Linux
 
 ```bash
-# 一次性 uinput 权限配置（详见 docs/driver-setup/linux-uinput.md）
+# One-time uinput permission setup (see docs/driver-setup/linux-uinput.md)
 sudo modprobe uinput
 echo uinput | sudo tee /etc/modules-load.d/hanvgamepad.conf
 sudo tee /etc/udev/rules.d/99-hanvgamepad.rules <<'EOF'
 KERNEL=="uinput", SUBSYSTEM=="misc", OPTIONS+="static_node=uinput", TAG+="uaccess", GROUP="input", MODE="0660"
 EOF
 sudo udevadm control --reload-rules && sudo udevadm trigger
-sudo usermod -aG input $USER    # 重新登录后生效
+sudo usermod -aG input $USER    # takes effect after re-login
 
-# 运行
-dotnet run --project src/desktop      # 桌面面板
+# Run
+dotnet run --project src/desktop      # desktop panel
 dotnet run --project src/cli -- start --port 5000   # headless
 ```
 
 ### macOS
 
-macOS 不能自带虚拟手柄驱动：创建虚拟 HID 需要 Apple 的受限 entitlement
-（`com.apple.developer.hid.virtual.device`）。HanVGamepad 通过 [OpenJoystickDriver](https://github.com/xsyetopz/OpenJoystickDriver)（OJD）输出手柄：
+macOS cannot ship a virtual gamepad driver: creating virtual HID devices requires
+Apple's restricted entitlement (`com.apple.developer.hid.virtual.device`).
+HanVGamepad outputs gamepads through [OpenJoystickDriver](https://github.com/xsyetopz/OpenJoystickDriver) (OJD):
 
-1. 安装 OJD（macOS 12+），在它的设置里安装命令行工具 `ojd`；
-2. 授予 OJD 输入监控与辅助功能；
-3. `ojd service start`；
-4. 再启动 HanVGamepad（驱动管理区会显示 OJD 是否就绪）。
+1. Install OJD (macOS 12+) and install its `ojd` command-line tool from its settings.
+2. Grant OJD Input Monitoring and Accessibility permissions.
+3. Run `ojd service start`.
+4. Start HanVGamepad (the Driver Management section shows whether OJD is ready).
 
 ```bash
-dotnet run --project src/desktop      # 桌面面板
+dotnet run --project src/desktop      # desktop panel
 dotnet run --project src/cli -- start --port 5000   # headless
 ```
 
-细节与故障排查见 [docs/driver-setup/macos-ojd.md](docs/driver-setup/macos-ojd.md)。
-macOS 端固定 4 个槽位（OJD 的 feed 上限）。
+See [docs/driver-setup/macos-ojd.md](docs/driver-setup/macos-ojd.md) for details and troubleshooting.
+The macOS host is fixed to four slots (OJD's feed limit).
 
-## 打包发布
+## Packaging and releases
 
 ```powershell
-pwsh packaging/build.ps1                   # 全平台产物
-pwsh packaging/build.ps1 -Runtime win-x64  # 仅 Windows
-pwsh packaging/build.ps1 -Runtime osx-arm64  # 仅 macOS（Apple silicon）
+pwsh windows-build.ps1                     # Windows: interactive (portable folder + installer)
+pwsh windows-build.ps1 -Clean              # Clean old outputs and do a full build
+pwsh windows-build.ps1 -NoInstaller        # Portable folder only (when Inno Setup is missing)
+pwsh windows-build.ps1 -SkipWeb -Version 1.1.0
 ```
 
-## 项目结构
+Windows outputs: `artifacts\win-x64\HanVGamepad\` (portable folder; double-click `HanVGamepad.Desktop.exe`),
+`artifacts\packages\HanVGamepad-<ver>-win-x64-portable.zip`, and
+`artifacts\packages\HanVGamepad-<ver>-win-x64-setup.exe` (Inno Setup).
+Releases use an expanded directory layout, not a self-extracting single-file exe.
+See [packaging/windows/README.md](packaging/windows/README.md) for details.
+
+Other platforms:
+
+```powershell
+pwsh packaging/build.ps1                     # All platforms
+pwsh packaging/build.ps1 -Runtime osx-arm64  # macOS only (Apple silicon)
+```
+
+## Project layout
 
 ```text
 HanVGamepad/
 ├── src/
-│   ├── server/     跨平台核心服务（SignalR Hub / WebRTC 会话 / 槽位管理）
-│   ├── driver/     虚拟手柄驱动抽象层（Windows ViGEmBus / Linux uinput / macOS OpenJoystickDriver）
-│   ├── desktop/    Avalonia UI 管理面板（Windows + Linux + macOS）
-│   └── cli/        无 UI 控制台入口
-├── web-client/     移动端 React SPA（构建产物内嵌到宿主 wwwroot）
-├── docs/           架构 / 协议 / 驱动安装文档
-├── packaging/      各平台打包脚本
-└── tests/          测试项目
+│   ├── server/     Cross-platform core service (SignalR hub / WebRTC sessions / slot management)
+│   ├── driver/     Virtual gamepad driver abstraction (Windows ViGEmBus / Linux uinput / macOS OpenJoystickDriver)
+│   ├── desktop/    Avalonia UI control panel (Windows + Linux + macOS)
+│   └── cli/        Headless console entry point
+├── web-client/     Mobile React SPA (build output embedded into the host wwwroot)
+├── docs/           Architecture / protocol / driver setup docs
+├── packaging/      Per-platform packaging scripts
+└── tests/          Test projects
 ```
 
-## 技术栈
+## Tech stack
 
-| 层 | 技术 |
-|----|------|
-| 核心服务 | .NET 10 + ASP.NET Core (Kestrel) + SignalR |
-| 实时传输 | WebRTC DataChannel（SIPSorcery，纯托管） |
-| 虚拟手柄 | Windows: ViGEmBus（Nefarius.ViGEm.Client）；Linux: uinput；macOS: OpenJoystickDriver（`ojd virtual feed`） |
-| 桌面 UI | Avalonia UI 11 + CommunityToolkit.Mvvm |
-| 移动端 | React 19 + Vite + TypeScript |
+| Layer | Technology |
+|-------|------------|
+| Core service | .NET 10 + ASP.NET Core (Kestrel) + SignalR |
+| Real-time transport | WebRTC DataChannel (SIPSorcery, fully managed) |
+| Virtual gamepad | Windows: ViGEmBus (Nefarius.ViGEm.Client); Linux: uinput; macOS: OpenJoystickDriver (`ojd virtual feed`) |
+| Desktop UI | Avalonia UI 11 + CommunityToolkit.Mvvm |
+| Mobile | React 19 + Vite + TypeScript |
 
-## 通信协议
+## Protocol
 
-信令走 SignalR（`/gamepadhub`），输入走 WebRTC DataChannel（纯文本）：
+Signaling uses SignalR (`/gamepadhub`); input uses a WebRTC DataChannel (plain text):
 
-| 消息 | 方向 | 含义 |
-|------|------|------|
-| `B:{button}:{0\|1}` | 手机→宿主 | 按键 |
-| `J:{stick}:{x}:{y}` | 手机→宿主 | 摇杆（short，−32768..32767） |
-| `Ping:{ts}` / `Pong:{ts}` | 双向 | 心跳 |
-| `ID:{slotIndex}` | 宿主→手机 | 槽位确认 |
-| `V:{strength}` | 宿主→手机 | 振动强度（0..255） |
+| Message | Direction | Meaning |
+|---------|-----------|---------|
+| `B:{button}:{0\|1}` | Phone → host | Button |
+| `J:{stick}:{x}:{y}` | Phone → host | Stick (short, −32768..32767) |
+| `Ping:{ts}` / `Pong:{ts}` | Bidirectional | Heartbeat |
+| `ID:{slotIndex}` | Host → phone | Slot assignment |
+| `V:{strength}` | Host → phone | Rumble strength (0..255) |
 
-完整协议见 [docs/protocol/datachannel.md](docs/protocol/datachannel.md)。
+See [docs/protocol/datachannel.md](docs/protocol/datachannel.md) for the full protocol.
 
-## 来源与署名
+## Origin and attribution
 
-本项目 fork 自 [aboodedc/VGamepadWeb](https://github.com/aboodedc/VGamepadWeb)，之后做了整体重写：
-桌面端改为 Avalonia 11，服务端拆分为 server / driver / cli 三层，新增 Linux uinput 后端与
-驱动的安装 / 检测 / 卸载流程，移动端页面与技术栈一并重做。
+This project is a fork of [aboodedc/VGamepadWeb](https://github.com/aboodedc/VGamepadWeb)
+that was subsequently rewritten end to end: the desktop app moved to Avalonia 11, the
+server was split into server / driver / cli layers, a Linux uinput backend and the
+driver install / detect / uninstall flow were added, and the mobile page and tech stack
+were rebuilt.
 
-原项目采用 MIT License，其版权声明随仓库保留在 [LICENSE-ORIGINAL](LICENSE-ORIGINAL)。
+The original project is MIT licensed; its copyright notice is kept in
+[LICENSE-ORIGINAL](LICENSE-ORIGINAL).
 
-## 许可证
+## License
 
-[PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) —— 完整条款见 [LICENSE](LICENSE)。
+[PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) —
+full terms in [LICENSE](LICENSE).
 
-**允许**：个人学习、研究、私人娱乐、业余项目；慈善机构、教育机构、公共研究机构、公共安全与卫生机构、环保组织、政府机构的非营利用途。
+**Permitted**: personal study, research, private enjoyment, hobby projects; noncommercial
+use by charities, educational institutions, public research institutions, public safety
+and health organizations, environmental organizations, and government institutions.
 
-**禁止**：出售本软件、用本软件提供商业服务，或任何以商业获利为目的的使用。
+**Prohibited**: selling the software, providing commercial services with it, or any use
+for commercial gain.
 
-**署名**：分发时必须一并提供以下版权声明行（PolyForm 的 Required Notice 机制）。
+**Attribution**: distributions must include the following copyright notice line (PolyForm's
+Required Notice mechanism).
 
 ```text
 Required Notice: Copyright (c) 2026 HanVGamepad Contributors
 ```
-

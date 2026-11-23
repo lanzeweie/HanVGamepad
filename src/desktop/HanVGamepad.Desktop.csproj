@@ -9,10 +9,11 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <Version>1.0.0</Version>
-    <Authors>HanVGamepad Contributors</Authors>
+    <Authors>涵涵大王 (lanzeweie)</Authors>
+    <Company>涵涵大王</Company>
     <Product>HanVGamepad</Product>
     <Description>Turn any smartphone browser into a virtual PC controller with low latency.</Description>
-    <Copyright>Copyright © 2026 HanVGamepad Contributors</Copyright>
+    <Copyright>Copyright © 2026 涵涵大王</Copyright>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- exe 自身图标：与托盘/窗口共用同一个 .ico，换图标只改生成脚本。 -->

@@ -40,15 +40,17 @@ foreach ($rid in $runtimes) {
     New-Item -ItemType Directory -Force -Path $out | Out-Null
 
     if ($rid -like "win-*") {
-        # Windows：桌面 GUI + CLI 双产物（self-contained 单文件）。
-        dotnet publish (Join-Path $root "src/desktop/HanVGamepad.Desktop.csproj") -c Release -r $rid --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o (Join-Path $out "gui")
-        dotnet publish (Join-Path $root "src/cli/HanVGamepad.Cli.csproj")     -c Release -r $rid --self-contained true -p:PublishSingleFile=true -o (Join-Path $out "cli")
+        # Windows：目录展开发布（散装 dll + exe）。单文件 exe 每次启动都要自解压到临时目录，
+        # Windows 产物明确不用这种形态；绿色包与安装包见根目录 windows-build.ps1。
+        dotnet publish (Join-Path $root "src/desktop/HanVGamepad.Desktop.csproj") -c Release -r $rid --self-contained true -p:PublishSingleFile=false -p:IncludeNativeLibrariesForSelfExtract=false -o (Join-Path $out "gui")
+        dotnet publish (Join-Path $root "src/cli/HanVGamepad.Cli.csproj")     -c Release -r $rid --self-contained true -p:PublishSingleFile=false -p:IncludeNativeLibrariesForSelfExtract=false -o (Join-Path $out "cli")
     }
     else {
         # Linux / macOS：CLI（headless）+ 可选 GUI。linux-arm64 仅 CLI（树莓派等无 GUI 场景）。
-        dotnet publish (Join-Path $root "src/cli/HanVGamepad.Cli.csproj") -c Release -r $rid --self-contained true -p:PublishSingleFile=true -o (Join-Path $out "cli")
+        # 与 Windows 一致：目录展开，不用单文件自解压。
+        dotnet publish (Join-Path $root "src/cli/HanVGamepad.Cli.csproj") -c Release -r $rid --self-contained true -p:PublishSingleFile=false -p:IncludeNativeLibrariesForSelfExtract=false -o (Join-Path $out "cli")
         if ($rid -ne "linux-arm64") {
-            dotnet publish (Join-Path $root "src/desktop/HanVGamepad.Desktop.csproj") -c Release -r $rid --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o (Join-Path $out "gui")
+            dotnet publish (Join-Path $root "src/desktop/HanVGamepad.Desktop.csproj") -c Release -r $rid --self-contained true -p:PublishSingleFile=false -p:IncludeNativeLibrariesForSelfExtract=false -o (Join-Path $out "gui")
         }
     }
 
