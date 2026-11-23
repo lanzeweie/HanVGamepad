@@ -22,6 +22,12 @@ through OpenJoystickDriver).
 - **Desktop control panel**: service status / QR code / slot management / driver management / i18n (Chinese, English, Arabic)
 - **CLI mode**: run headless from the command line
 
+## Screenshots
+
+| Host control panel | Phone client |
+|:---:|:---:|
+| ![Host control panel](README/服务端英文页面.jpg) | ![Phone client](README/客户端登录界面-英文.jpg) |
+
 ## Getting started
 
 ### Prerequisites: build
@@ -62,7 +68,7 @@ hanvgamepad driver status|install|uninstall               Driver management
 ### Linux
 
 ```bash
-# One-time uinput permission setup (see docs/driver-setup/linux-uinput.md)
+# One-time uinput permission setup (modprobe + udev rule for /dev/uinput)
 sudo modprobe uinput
 echo uinput | sudo tee /etc/modules-load.d/hanvgamepad.conf
 sudo tee /etc/udev/rules.d/99-hanvgamepad.rules <<'EOF'
@@ -92,7 +98,6 @@ dotnet run --project src/desktop      # desktop panel
 dotnet run --project src/cli -- start --port 5000   # headless
 ```
 
-See [docs/driver-setup/macos-ojd.md](docs/driver-setup/macos-ojd.md) for details and troubleshooting.
 The macOS host is fixed to four slots (OJD's feed limit).
 
 ## Packaging and releases
@@ -154,8 +159,6 @@ Signaling uses SignalR (`/gamepadhub`); input uses a WebRTC DataChannel (plain t
 | `ID:{slotIndex}` | Host → phone | Slot assignment |
 | `V:{strength}` | Host → phone | Rumble strength (0..255) |
 
-See [docs/protocol/datachannel.md](docs/protocol/datachannel.md) for the full protocol.
-
 ## Origin and attribution
 
 This project is a fork of [aboodedc/VGamepadWeb](https://github.com/aboodedc/VGamepadWeb)
@@ -183,5 +186,5 @@ for commercial gain.
 Required Notice mechanism).
 
 ```text
-Required Notice: Copyright (c) 2026 HanVGamepad Contributors
+Required Notice: Copyright (c) 2026 涵涵大王
 ```

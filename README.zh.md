@@ -20,6 +20,12 @@
 - **桌面管理面板**：服务状态 / QR 扫码 / 槽位管理 / 驱动管理 / 多语言（中/英/阿）
 - **CLI 模式**：headless 场景下以命令行运行服务
 
+## 界面截图
+
+| 服务端管理面板 | 手机客户端 |
+|:---:|:---:|
+| ![服务端管理面板](README/服务端中文页面.jpg) | ![手机客户端](README/客户端登录界面.jpg) |
+
 ## 启动方法
 
 ### 前置：构建
@@ -60,7 +66,7 @@ hanvgamepad driver status|install|uninstall               驱动管理
 ### Linux
 
 ```bash
-# 一次性 uinput 权限配置（详见 docs/driver-setup/linux-uinput.md）
+# 一次性 uinput 权限配置（modprobe + /dev/uinput 的 udev 规则）
 sudo modprobe uinput
 echo uinput | sudo tee /etc/modules-load.d/hanvgamepad.conf
 sudo tee /etc/udev/rules.d/99-hanvgamepad.rules <<'EOF'
@@ -89,7 +95,6 @@ dotnet run --project src/desktop      # 桌面面板
 dotnet run --project src/cli -- start --port 5000   # headless
 ```
 
-细节与故障排查见 [docs/driver-setup/macos-ojd.md](docs/driver-setup/macos-ojd.md)。
 macOS 端固定 4 个槽位（OJD 的 feed 上限）。
 
 ## 打包发布
@@ -150,8 +155,6 @@ HanVGamepad/
 | `ID:{slotIndex}` | 宿主→手机 | 槽位确认 |
 | `V:{strength}` | 宿主→手机 | 振动强度（0..255） |
 
-完整协议见 [docs/protocol/datachannel.md](docs/protocol/datachannel.md)。
-
 ## 来源与署名
 
 本项目 fork 自 [aboodedc/VGamepadWeb](https://github.com/aboodedc/VGamepadWeb)，之后做了整体重写：
@@ -171,6 +174,6 @@ HanVGamepad/
 **署名**：分发时必须一并提供以下版权声明行（PolyForm 的 Required Notice 机制）。
 
 ```text
-Required Notice: Copyright (c) 2026 HanVGamepad Contributors
+Required Notice: Copyright (c) 2026 涵涵大王
 ```
 
