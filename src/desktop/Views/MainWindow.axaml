@@ -173,6 +173,18 @@
       <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
     </Style>
 
+    <!-- 底部版本号：默认保持 hint 的低调灰，悬停才提亮并加下划线——点击交给 HyperlinkButton 的 NavigateUri -->
+    <Style Selector="HyperlinkButton.versionLink">
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    <Style Selector="HyperlinkButton.versionLink:pointerover TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+      <Setter Property="TextDecorations" Value="Underline"/>
+    </Style>
+
     <!-- 槽位标题字号交给样式控制：内联 FontSize 会盖掉紧凑/中密度的覆盖，导致小卡里字还是大的 -->
     <Style Selector="TextBlock.slotTitle">
       <Setter Property="FontSize" Value="14"/>
@@ -541,7 +553,10 @@
       <!-- ═══ 底部：版本 + 主题开关 ═══ -->
       <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="2,12,2,14">
         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-          <TextBlock Text="{Binding VersionText}" Classes="hint"/>
+          <!-- 版本号即仓库入口：点一下用系统浏览器打开 GitHub -->
+          <HyperlinkButton Classes="versionLink" NavigateUri="{Binding RepoUrl}">
+            <TextBlock Text="{Binding VersionText}" Classes="hint"/>
+          </HyperlinkButton>
           <!-- 伪装模式要显眼：否则测试完忘了，会以为 Windows 上真有 16 个槽 -->
           <TextBlock Text="{Binding PretendText}" Classes="hint"
                      IsVisible="{Binding IsPortablePretend}"/>

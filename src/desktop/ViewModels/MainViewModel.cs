@@ -150,6 +150,9 @@ namespace HanVGamepad.Desktop.ViewModels
         public string VersionText => "HanVGamepad v" +
             (typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.0.0");
 
+        /// <summary>点版本号跳转的仓库地址（HyperlinkButton.NavigateUri 要 Uri，不写字符串）。</summary>
+        public Uri RepoUrl { get; } = new("https://github.com/lanzeweie/HanVGamepad");
+
         public string StatusText => Phase switch
         {
             ServerPhase.Running => Strings.T(Language, "state.running"),
