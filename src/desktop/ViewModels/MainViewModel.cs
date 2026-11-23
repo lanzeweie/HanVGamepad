@@ -678,6 +678,10 @@ namespace HanVGamepad.Desktop.ViewModels
             Language = language;
             PersistSettings();
             RefreshTexts();
+
+            // 驱动卡片的状态胶囊和详情行存的是「已经翻译好的字符串」，不是 getter：只刷绑定会让它们
+            // 停在上一种语言。语言变了就重新取一次驱动状态，让文案跟着换；异常在方法内部已吞掉。
+            _ = RefreshDriverStatusAsync();
         }
 
         [RelayCommand]
