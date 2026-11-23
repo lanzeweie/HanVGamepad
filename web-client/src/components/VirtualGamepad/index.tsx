@@ -10,43 +10,33 @@ import { EditBar } from './EditBar';
 import { useGamepadConnection } from './hooks/useGamepadConnection';
 import { usePageLockdown } from './hooks/usePageLockdown';
 import { LanguageProvider, useLanguage } from './LanguageContext';
+import { fetchSavedLayouts, saveLayoutToServer } from './layoutApi';
+import type { SavedLayout } from './layoutApi';
 
 const VirtualGamepadInner: React.FC = () => {
   const { t } = useLanguage();
 
   // 挡住右键菜单 / 开发者工具 / 复制 / 刷新等会打断手柄操作的浏览器行为。
   usePageLockdown();
-  const [activeProfile, setActiveProfile] = useState<string>(() => localStorage.getItem('gamepad_active_profile') || 'default');
-  // 默认方案的名字跟着语言走。老用户 localStorage 里存的还是旧名（「默认」/「Default」），
-  // 读取时就换掉 —— 不用 effect 改状态，初始化阶段一次搞定。
-  const [profiles, setProfiles] = useState<{id: string, name: string}[]>(() => {
-    try {
-      const p = localStorage.getItem('gamepad_profiles');
-      if (p) {
-        const saved = JSON.parse(p) as {id: string, name: string}[];
-        if (Array.isArray(saved)) {
-          return saved.map(item =>
-            item.id === 'default' ? { ...item, name: t.defaultProfile } : item
-          );
-        }
-      }
-    } catch {}
-    return [{ id: 'default', name: t.defaultProfile }];
-  });
 
-  // 手柄类型是一个「设备 + 按键外观」的组合，没有单独的风格开关：
-  // DualShock 4 设备画 PlayStation，Xbox 360 设备画 Xbox 或 Nintendo Switch（设备仍是 Xbox 360）。
   const [theme, setTheme] = useState<ThemeType>(() => {
     const saved = localStorage.getItem('gamepad_theme');
     return saved === 'ps' || saved === 'nintendo' ? saved : 'xbox';
   });
   const controllerType = theme === 'ps' ? 1 : 0;
-  const [layout, setLayout] = useState<GamepadLayout>(() => {
-    const initialTheme = (localStorage.getItem('gamepad_theme') as ThemeType) || 'xbox';
-    const initialProfile = localStorage.getItem('gamepad_active_profile') || 'default';
-    return loadLayout(initialTheme, initialProfile);
-  });
-  
+  const [layout, setLayout] = useState<GamepadLayout>(() => loadLayout(theme));
+
+  // 方案存放在服务端：布局菜单里的「选择方案」读取这一份列表。
+  const [savedLayouts, setSavedLayouts] = useState<SavedLayout[]>([]);
+  const [currentLayoutName, setCurrentLayoutName] = useState<string | null>(null);
+  const [layoutsLoadFailed, setLayoutsLoadFailed] = useState(false);
+
+  useEffect(() => {
+    fetchSavedLayouts()
+      .then(list => { setSavedLayouts(list); setLayoutsLoadFailed(false); })
+      .catch(() => setLayoutsLoadFailed(true));
+  }, []);
+
   const [editMode, setEditMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [serverPassword, setServerPassword] = useState(() => localStorage.getItem('gamepad_pass') || '');
@@ -61,7 +51,6 @@ const VirtualGamepadInner: React.FC = () => {
   const [showHitboxes, setShowHitboxes] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   // 服务器地址恒为当前页面的 origin：这个页面本就是那台 PC 提供的，
   // 再让用户填地址是自己给自己找麻烦。
@@ -130,10 +119,8 @@ const VirtualGamepadInner: React.FC = () => {
   };
 
   // Persist
-  useEffect(() => { localStorage.setItem(`${LAYOUT_KEY}_${activeProfile}_${theme}`, JSON.stringify(layout)); }, [layout, theme, activeProfile]);
+  useEffect(() => { localStorage.setItem(`${LAYOUT_KEY}_${theme}`, JSON.stringify(layout)); }, [layout, theme]);
   useEffect(() => { localStorage.setItem('gamepad_theme', theme); }, [theme]);
-  useEffect(() => { localStorage.setItem('gamepad_active_profile', activeProfile); }, [activeProfile]);
-  useEffect(() => { localStorage.setItem('gamepad_profiles', JSON.stringify(profiles)); }, [profiles]);
   useEffect(() => { localStorage.setItem('gamepad_vib', enableVib.toString()); }, [enableVib]);
   useEffect(() => { localStorage.setItem('gamepad_sens', sensitivity.toString()); }, [sensitivity]);
   useEffect(() => { localStorage.setItem('gamepad_pass', serverPassword); }, [serverPassword]);
@@ -165,34 +152,30 @@ const VirtualGamepadInner: React.FC = () => {
     };
   }, [sendButton, sendJoystick]);
 
-  const switchProfile = useCallback((profileId: string) => {
-    setActiveProfile(profileId);
-    setLayout(loadLayout(theme, profileId));
-  }, [theme]);
+  const selectLayout = useCallback((name: string) => {
+    const saved = savedLayouts.find(item => item.name === name);
+    if (!saved || !saved.layout?.controls) return;
 
-  const createNewProfile = () => {
-    const name = prompt(t.newProfilePrompt);
-    if (name && name.trim()) {
-      const newId = 'p_' + Date.now();
-      setProfiles(prev => [...prev, { id: newId, name: name.trim() }]);
-      setActiveProfile(newId);
-      setLayout(loadLayout(theme, newId));
-    }
-  };
+    setLayout(saved.layout);
+    setCurrentLayoutName(name);
+    setSelectedControl(null);
+  }, [savedLayouts]);
 
-  const deleteProfile = (profileId: string) => {
-    if (profiles.length <= 1) return alert(t.cannotDeleteOnly);
-    if (window.confirm(t.confirmDeleteProfile)) {
-      const newProfiles = profiles.filter(p => p.id !== profileId);
-      setProfiles(newProfiles);
-      if (activeProfile === profileId) {
-        const fallback = newProfiles[0].id;
-        setActiveProfile(fallback);
-        setLayout(loadLayout(theme, fallback));
-      }
-      Object.keys(THEMES).forEach(t => localStorage.removeItem(`${LAYOUT_KEY}_${profileId}_${t}`));
+  const saveLayout = useCallback(async () => {
+    const name = window.prompt(t.layoutNamePrompt, currentLayoutName ?? '');
+    const trimmed = name?.trim();
+    if (!trimmed) return;
+
+    try {
+      const list = await saveLayoutToServer(trimmed, layout);
+      setSavedLayouts(list);
+      setCurrentLayoutName(trimmed);
+      setLayoutsLoadFailed(false);
+      setMenuOpen(false);
+    } catch {
+      alert(t.saveLayoutFailed);
     }
-  };
+  }, [currentLayoutName, layout, t]);
 
   // Layout ops
   const updatePos = useCallback((id: string, x: number, y: number) => {
@@ -264,27 +247,12 @@ const VirtualGamepadInner: React.FC = () => {
     setSelectedControl(prev => prev === id ? null : prev);
   }, []);
 
-  const resetLayout = () => { setLayout(DEFAULT_LAYOUT); setMenuOpen(false); setSelectedControl(null); setVisibilityMenuOpen(false); };
-
-  const exportLayout = () => {
-    const blob = new Blob([JSON.stringify(layout, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'gamepad-layout.json'; a.click(); URL.revokeObjectURL(a.href);
+  const resetLayout = () => {
+    setLayout(DEFAULT_LAYOUT);
+    setCurrentLayoutName(null);
     setMenuOpen(false);
-  };
-
-  const importLayout = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const p = JSON.parse(reader.result as string);
-        if (p.controls) { setLayout(p); } else { alert(t.invalidFile); }
-      } catch { alert(t.readFileFailed); }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-    setMenuOpen(false);
+    setSelectedControl(null);
+    setVisibilityMenuOpen(false);
   };
 
   return (
@@ -295,10 +263,10 @@ const VirtualGamepadInner: React.FC = () => {
         editMode={editMode} setEditMode={setEditMode}
         menuOpen={menuOpen} setMenuOpen={setMenuOpen} visibilityMenuOpen={visibilityMenuOpen}
         setVisibilityMenuOpen={setVisibilityMenuOpen} resetLayout={resetLayout}
-        exportLayout={exportLayout} fileRef={fileRef} importLayout={importLayout} layout={layout} toggleVisibility={toggleVisibility}
+        layout={layout} toggleVisibility={toggleVisibility}
         showHitboxes={showHitboxes} setShowHitboxes={setShowHitboxes}
-        activeProfile={activeProfile} profiles={profiles} switchProfile={switchProfile}
-        createNewProfile={createNewProfile} deleteProfile={deleteProfile}
+        savedLayouts={savedLayouts} currentLayoutName={currentLayoutName}
+        layoutsLoadFailed={layoutsLoadFailed} selectLayout={selectLayout} saveLayout={saveLayout}
         enableVib={enableVib} setEnableVib={setEnableVib}
         sensitivity={sensitivity} setSensitivity={setSensitivity}
       />

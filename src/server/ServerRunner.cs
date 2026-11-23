@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using HanVGamepad.Driver.Abstractions;
 using HanVGamepad.Server.Hubs;
+using HanVGamepad.Server.Layouts;
 using HanVGamepad.Server.Logging;
 using HanVGamepad.Server.Session;
 using HanVGamepad.Server.Slots;
@@ -104,6 +105,14 @@ namespace HanVGamepad.Server
                 _app = builder.Build();
 
                 _app.UseCors();
+
+                // 按键布局方案：同一台 PC 上的所有手机客户端共享这一份列表。
+                var layoutStore = new LayoutStore();
+                _app.MapGet("/api/layouts", () => Results.Ok(layoutStore.List()));
+                _app.MapPost("/api/layouts", (SaveLayoutRequest request) =>
+                    layoutStore.Save(request.Name, request.Layout)
+                        ? Results.Ok(layoutStore.List())
+                        : Results.BadRequest());
 
                 // 默认文档（index.html）与静态资源（JS/CSS/图片）。
                 _app.UseDefaultFiles();

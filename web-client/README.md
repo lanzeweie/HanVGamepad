@@ -21,7 +21,7 @@ src/
     ├── ConnectionGate.tsx        连接门（选槽 / 密码 / 连接）
     ├── GpButton.tsx / GpJoystick.tsx   按键与摇杆控件
     ├── TopBar.tsx / EditBar.tsx  顶栏与布局编辑
-    ├── AboutModal.tsx            关于
+    ├── LayoutPicker.tsx / layoutApi.ts  服务端方案保存与选择
     ├── hooks/                    连接管理 / 页面锁定
     ├── i18n.ts                   中 / 英 / 阿三语
     └── constants.ts / types.ts / utils.ts
@@ -31,6 +31,9 @@ src/
 
 与宿主通过 SignalR（`/gamepadhub`）信令 + WebRTC DataChannel 通信，
 消息格式见 `docs/protocol/datachannel.md`。
+
+按键布局方案通过宿主 HTTP API 存取：`GET /api/layouts` 列出方案，
+`POST /api/layouts`（`{ name, layout }`）按名称保存，同名覆盖。
 
 ## 许可证
 

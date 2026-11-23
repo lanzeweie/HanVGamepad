@@ -82,7 +82,7 @@ export const ConnectionGate: React.FC<ConnectionGateProps> = ({
           <option value="ps">{t.typeDualShock4}（PlayStation）</option>
         </select>
 
-        <button className="gp-mbtn green gp-gate-connect" onClick={connect} disabled={connecting}>
+        <button className="gp-mbtn accent gp-gate-connect" onClick={connect} disabled={connecting}>
           {connecting ? t.connecting : t.connect}
         </button>
 

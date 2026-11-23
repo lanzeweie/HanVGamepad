@@ -7,26 +7,29 @@ const ar = {
     disconnected: 'غير متصل',
 
     // TopBar buttons
-    hide: 'إخفاء',
+    hide: 'إخفاء القائمة',
     minimize: 'نافذة',
     fullscreen: 'شاشة كاملة',
     done: 'تم',
-    edit: 'تعديل',
-    touchArea: 'منطقة اللمس',
+    edit: 'تعديل التخطيط',
+    showTouchArea: 'إظهار مناطق اللمس',
     buttons: 'الأزرار',
     leftStick: 'عصا اليسار',
     rightStick: 'عصا اليمين',
 
     // Menu
-    reset: 'إعادة ضبط',
-    export: 'تصدير',
-    import: 'استيراد',
+    reset: 'إعادة ضبط التخطيط',
+    saveLayout: 'حفظ التخطيط',
+    selectLayout: 'اختيار التخطيط',
+    layoutNamePrompt: 'أدخل اسم التخطيط:',
+    saveLayoutFailed: 'فشل حفظ التخطيط',
+    loadLayoutsFailed: 'فشل تحميل التخطيطات',
+    noSavedLayouts: 'لا توجد تخطيطات محفوظة على الخادم بعد',
     connection: 'اتصال',
-    menu: 'القائمة',
+    menu: 'قائمة التخطيط',
     showBar: 'إظهار الشريط',
 
     // Settings Modal
-    profile: 'البروفايل (تخصيص الأزرار)',
     controllerType: 'نوع ذراع التحكم',
     typeXbox360: 'Xbox 360',
     typeDualShock4: 'DualShock 4',
@@ -40,19 +43,9 @@ const ar = {
     passwordPlaceholder: 'اتركها فارغة إذا لم يكن هناك باسورد',
     connect: 'اتصال',
 
-    // Profile prompts/alerts
-    defaultProfile: 'ملف التخطيط الافتراضي',
-    newProfile: 'بروفايل جديد',
-    deleteProfile: 'حذف البروفايل',
-    newProfilePrompt: 'أدخل اسم البروفايل الجديد:',
-    cannotDeleteOnly: 'لا يمكن حذف البروفايل الوحيد',
-    confirmDeleteProfile: 'هل أنت متأكد من حذف هذا البروفايل؟',
-    invalidFile: 'ملف غير صالح',
-    readFileFailed: 'فشل قراءة الملف',
-
     // Connection gate (未连接时的全屏覆盖层)
     gateTitle: 'الاتصال بالجهاز',
-    gateLandscape: 'يُفضّل الاستخدام أفقيًا — أدر الهاتف أو اضغط «شاشة كاملة»',
+    gateLandscape: 'يُفضّل الاستخدام أفقيًا — اضغط «شاشة كاملة» للحصول على تجربة أفضل',
 
     // Stable reason codes from the server
     reasonSlotTaken: 'هذا المقعد مشغول، اختر مقعداً آخر',
@@ -81,14 +74,6 @@ const ar = {
     arabic: 'العربية',
     english: 'English',
     chinese: '中文',
-
-    // About
-    about: 'حول',
-    aboutTitle: 'HanVGamepad',
-    aboutTagline: 'يد تحكم افتراضية للكمبيوتر',
-    aboutMadeWith: 'صُنع بكل ❤️ من',
-    aboutName: 'HanVGamepad',
-    aboutMIT: 'محمي برخصة MIT المفتوحة',
 };
 
 const en = {
@@ -98,26 +83,29 @@ const en = {
     disconnected: 'Disconnected',
 
     // TopBar buttons
-    hide: 'Hide',
+    hide: 'Hide Menu',
     minimize: 'Window',
     fullscreen: 'Fullscreen',
     done: 'Done',
-    edit: 'Edit',
-    touchArea: 'Hitboxes',
+    edit: 'Edit Layout',
+    showTouchArea: 'Show Hitboxes',
     buttons: 'Buttons',
     leftStick: 'Left Stick',
     rightStick: 'Right Stick',
 
     // Menu
-    reset: 'Reset',
-    export: 'Export',
-    import: 'Import',
+    reset: 'Reset Layout',
+    saveLayout: 'Save Layout',
+    selectLayout: 'Select Layout',
+    layoutNamePrompt: 'Enter layout name:',
+    saveLayoutFailed: 'Failed to save layout',
+    loadLayoutsFailed: 'Failed to load layouts',
+    noSavedLayouts: 'No layouts saved on the server yet',
     connection: 'Connection',
-    menu: 'Menu',
+    menu: 'Layout Menu',
     showBar: 'Show Bar',
 
     // Settings Modal
-    profile: 'Profile (Button Layout)',
     controllerType: 'Controller type',
     typeXbox360: 'Xbox 360',
     typeDualShock4: 'DualShock 4',
@@ -131,19 +119,9 @@ const en = {
     passwordPlaceholder: 'Leave empty if no password',
     connect: 'Connect',
 
-    // Profile prompts/alerts
-    defaultProfile: 'Default Layout Profile',
-    newProfile: 'New Profile',
-    deleteProfile: 'Delete Profile',
-    newProfilePrompt: 'Enter new profile name:',
-    cannotDeleteOnly: 'Cannot delete the only profile',
-    confirmDeleteProfile: 'Are you sure you want to delete this profile?',
-    invalidFile: 'Invalid file',
-    readFileFailed: 'Failed to read file',
-
     // Connection gate (未连接时的全屏覆盖层)
     gateTitle: 'Connect to device',
-    gateLandscape: 'Landscape recommended — rotate the phone, or tap Fullscreen',
+    gateLandscape: 'Landscape recommended — tap Fullscreen for a better experience',
 
     // Stable reason codes from the server
     reasonSlotTaken: 'This slot is in use, pick another one',
@@ -172,14 +150,6 @@ const en = {
     arabic: 'العربية',
     english: 'English',
     chinese: '中文',
-
-    // About
-    about: 'About',
-    aboutTitle: 'HanVGamepad',
-    aboutTagline: 'Virtual Gamepad for PC',
-    aboutMadeWith: 'Made with ❤️ by',
-    aboutName: 'HanVGamepad',
-    aboutMIT: 'Licensed under MIT Open Source',
 } as const;
 
 export type Translations = typeof en;
@@ -192,26 +162,29 @@ const zh = {
   disconnected: '未连接',
 
   // TopBar buttons
-  hide: '隐藏',
+  hide: '隐藏菜单',
   minimize: '窗口',
   fullscreen: '全屏',
   done: '完成',
-  edit: '编辑',
-  touchArea: '触摸区',
+  edit: '编辑布局',
+  showTouchArea: '显示触摸区',
   buttons: '按键',
   leftStick: '左摇杆',
   rightStick: '右摇杆',
 
   // Menu
-  reset: '重置',
-  export: '导出',
-  import: '导入',
+  reset: '重置布局',
+  saveLayout: '保存方案',
+  selectLayout: '选择方案',
+  layoutNamePrompt: '输入方案名称：',
+  saveLayoutFailed: '保存方案失败',
+  loadLayoutsFailed: '读取方案失败',
+  noSavedLayouts: '服务端还没有保存的方案',
   connection: '连接',
-  menu: '菜单',
+  menu: '布局菜单',
   showBar: '显示顶栏',
 
   // Settings Modal
-  profile: '配置方案（按键布局）',
   controllerType: '手柄类型',
   typeXbox360: 'Xbox 360',
   typeDualShock4: 'DualShock 4',
@@ -225,19 +198,9 @@ const zh = {
   passwordPlaceholder: '没有密码就留空',
   connect: '连接',
 
-  // Profile prompts/alerts
-  defaultProfile: '默认布局方案',
-  newProfile: '新建方案',
-  deleteProfile: '删除方案',
-  newProfilePrompt: '输入新配置方案的名称：',
-  cannotDeleteOnly: '不能删除唯一的配置方案',
-  confirmDeleteProfile: '确定要删除这个配置方案吗？',
-  invalidFile: '文件无效',
-  readFileFailed: '读取文件失败',
-
   // Connection gate (未连接时的全屏覆盖层)
   gateTitle: '连接设备',
-  gateLandscape: '建议横屏使用 —— 旋转手机，或点「全屏」自动转过来',
+  gateLandscape: '建议横屏使用，点击全屏获得更好体验',
 
   // Stable reason codes from the server
   reasonSlotTaken: '该槽位已被占用，请选其他槽位',
@@ -266,14 +229,6 @@ const zh = {
   arabic: 'العربية',
   english: 'English',
   chinese: '中文',
-
-  // About
-  about: '关于',
-  aboutTitle: 'HanVGamepad',
-  aboutTagline: 'PC 虚拟手柄',
-  aboutMadeWith: '用心制作 ❤️',
-  aboutName: 'HanVGamepad',
-  aboutMIT: '基于 MIT 开源协议',
 } satisfies Record<keyof Translations, string>;
 
 export const translations = { ar, en, zh } as const;
