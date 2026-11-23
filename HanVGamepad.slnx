@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/server/HanVGamepad.Server.csproj" />
+    <Project Path="src/driver/HanVGamepad.Driver.csproj" />
+    <Project Path="src/desktop/HanVGamepad.Desktop.csproj" />
+    <Project Path="src/cli/HanVGamepad.Cli.csproj" />
+  </Folder>
+</Solution>

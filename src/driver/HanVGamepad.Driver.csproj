@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>HanVGamepad.Driver</RootNamespace>
+    <!-- ViGEm 的 FeedbackReceived 已被上游标成过时，行为不能动，只压掉这一条。 -->
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
+  </PropertyGroup>
+
+  <!-- Windows 构建：编入 ViGEmBus 后端并定义分派常量。 -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <DefineConstants>$(DefineConstants);VGP_WINDOWS_IMPL</DefineConstants>
+  </PropertyGroup>
+
+  <!-- 非 Windows 构建：排除 Windows 专属实现（引用 Windows-only 包）。 -->
+  <ItemGroup Condition="!$([MSBuild]::IsOSPlatform('Windows'))">
+    <Compile Remove="Windows/**/*.cs" />
+    <None Include="Windows/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <PackageReference Include="Nefarius.ViGEm.Client" Version="1.21.256" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
+    <EmbeddedResource Include="Windows/ViGEmBus_1.22.0_x64_x86_arm64.exe" />
+  </ItemGroup>
+
+</Project>

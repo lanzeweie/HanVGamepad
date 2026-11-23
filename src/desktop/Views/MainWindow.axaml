@@ -1,0 +1,568 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:HanVGamepad.Desktop.ViewModels"
+        x:Class="HanVGamepad.Desktop.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="{Binding TitleText}"
+        Width="1080" Height="650"
+        MinWidth="1000" MinHeight="600"
+        Background="{DynamicResource AppWindowBrush}"
+        WindowStartupLocation="CenterScreen"
+        Icon="avares://HanVGamepad.Desktop/Resources/HanVGamepadIcon.ico">
+
+  <!-- 品牌色只给主操作按钮用：Fluent 主题键里没有「绿色主按钮」这一档。 -->
+  <Window.Resources>
+    <SolidColorBrush x:Key="BrandGreenBrush" Color="#2F7D4F"/>
+    <SolidColorBrush x:Key="BrandGreenHoverBrush" Color="#276B43"/>
+    <SolidColorBrush x:Key="BrandGreenPressedBrush" Color="#205A38"/>
+    <SolidColorBrush x:Key="BrandRedBrush" Color="#C93B41"/>
+    <SolidColorBrush x:Key="BrandRedHoverBrush" Color="#B23237"/>
+    <SolidColorBrush x:Key="BrandRedPressedBrush" Color="#9B2A2F"/>
+  </Window.Resources>
+
+  <Window.Styles>
+    <!-- 卡片：实色底 + 1px 边 + 极轻投影 -->
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="BoxShadow" Value="0 2 12 0 #0D000000"/>
+    </Style>
+
+    <!-- 槽位格：比卡片低一层的实色底 -->
+    <Style Selector="Border.slot">
+      <Setter Property="Background" Value="{DynamicResource AppInsetBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+
+    <Style Selector="Button">
+      <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+
+    <!-- 所有按钮的文字都居中：Fluent 默认把内容贴左，拉伸后的按钮会明显歪。 -->
+    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
+    <!-- 主按钮：绿色实心。
+         默认态必须同时打到模板内层 ContentPresenter，只设 Button.Background 会被 Fluent 主题盖回去，
+         表现就是「默认不是绿、鼠标一放上去才变绿」。 -->
+    <Style Selector="Button.accent">
+      <Setter Property="Background" Value="{StaticResource BrandGreenBrush}"/>
+      <Setter Property="Foreground" Value="#FFFFFF"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.accent /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource BrandGreenBrush}"/>
+      <Setter Property="Foreground" Value="#FFFFFF"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.accent:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource BrandGreenHoverBrush}"/>
+      <Setter Property="Foreground" Value="#FFFFFF"/>
+    </Style>
+    <Style Selector="Button.accent:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource BrandGreenPressedBrush}"/>
+      <Setter Property="Foreground" Value="#FFFFFF"/>
+    </Style>
+    <Style Selector="Button.accent:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource BrandGreenBrush}"/>
+      <Setter Property="Foreground" Value="#FFFFFF"/>
+      <Setter Property="Opacity" Value="0.45"/>
+    </Style>
+
+    <!-- 运行中：同一颗按钮变成「停止服务」，切红色（Classes.stop 绑 IsRunning） -->
+    <Style Selector="Button.accent.stop /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource BrandRedBrush}"/>
+      <Setter Property="Foreground" Value="#FFFFFF"/>
+    </Style>
+    <Style Selector="Button.accent.stop:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource BrandRedHoverBrush}"/>
+      <Setter Property="Foreground" Value="#FFFFFF"/>
+    </Style>
+    <Style Selector="Button.accent.stop:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource BrandRedPressedBrush}"/>
+      <Setter Property="Foreground" Value="#FFFFFF"/>
+    </Style>
+
+    <!-- 次按钮：透明底细边 -->
+    <Style Selector="Button.ghost">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style Selector="Button.ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AppInsetBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+    </Style>
+
+    <!-- 迷你按钮：驱动区专用 -->
+    <Style Selector="Button.mini">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="5"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="Padding" Value="9,3"/>
+      <Setter Property="MinHeight" Value="24"/>
+    </Style>
+    <Style Selector="Button.mini:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AppInsetBrush}"/>
+    </Style>
+
+    <!-- 输入框内的无边框文字按钮（密码显示/隐藏）：任何状态下都保持透明，只让图标变色 -->
+    <Style Selector="Button.inline">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Padding" Value="6,2"/>
+      <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+    <Style Selector="Button.inline /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.inline:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.inline:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.inline:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.inline:pointerover Path.eyeIcon">
+      <Setter Property="Stroke" Value="{DynamicResource AppTextBrush}"/>
+    </Style>
+
+    <!-- 输入框跟着卡片色走，避免暗色下比卡片亮出一档 -->
+    <Style Selector="TextBox">
+      <Setter Property="Background" Value="{DynamicResource AppInputBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+      <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="Background" Value="{DynamicResource AppInputBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+      <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+
+    <Style Selector="TextBlock.section">
+      <Setter Property="FontSize" Value="15"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.caption">
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.hint">
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="Foreground" Value="{DynamicResource AppTextMutedBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.value">
+      <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+    </Style>
+
+    <!-- 槽位标题字号交给样式控制：内联 FontSize 会盖掉紧凑/中密度的覆盖，导致小卡里字还是大的 -->
+    <Style Selector="TextBlock.slotTitle">
+      <Setter Property="FontSize" Value="14"/>
+    </Style>
+
+    <!-- 槽位三态统一用大手柄，只靠颜色区分 -->
+    <!-- 未连接：灰色 -->
+    <Style Selector="Path.padEmpty">
+      <Setter Property="Width" Value="56"/>
+      <Setter Property="Height" Value="56"/>
+      <Setter Property="Stretch" Value="Uniform"/>
+      <Setter Property="Fill" Value="Transparent"/>
+      <Setter Property="Stroke" Value="{DynamicResource AppIdleBrush}"/>
+      <Setter Property="StrokeThickness" Value="1.6"/>
+      <Setter Property="StrokeLineCap" Value="Round"/>
+    </Style>
+
+    <!-- 已连接：绿色 -->
+    <Style Selector="Path.padOnline">
+      <Setter Property="Width" Value="56"/>
+      <Setter Property="Height" Value="56"/>
+      <Setter Property="Stretch" Value="Uniform"/>
+      <Setter Property="Fill" Value="Transparent"/>
+      <Setter Property="Stroke" Value="{DynamicResource AppOnlineBrush}"/>
+      <Setter Property="StrokeThickness" Value="1.6"/>
+      <Setter Property="StrokeLineCap" Value="Round"/>
+    </Style>
+
+    <!-- 系统手柄占用：红色 -->
+    <Style Selector="Path.padReserved">
+      <Setter Property="Width" Value="56"/>
+      <Setter Property="Height" Value="56"/>
+      <Setter Property="Stretch" Value="Uniform"/>
+      <Setter Property="Fill" Value="Transparent"/>
+      <Setter Property="Stroke" Value="{DynamicResource AppDangerBrush}"/>
+      <Setter Property="StrokeThickness" Value="1.6"/>
+      <Setter Property="StrokeLineCap" Value="Round"/>
+    </Style>
+
+    <!-- 密码显示/隐藏的眼睛图标 -->
+    <Style Selector="Path.eyeIcon">
+      <Setter Property="Width" Value="15"/>
+      <Setter Property="Height" Value="15"/>
+      <Setter Property="Stretch" Value="Uniform"/>
+      <Setter Property="Fill" Value="Transparent"/>
+      <Setter Property="Stroke" Value="{DynamicResource AppTextSecondaryBrush}"/>
+      <Setter Property="StrokeThickness" Value="1.4"/>
+      <Setter Property="StrokeLineCap" Value="Round"/>
+    </Style>
+
+    <!-- 底部主题图标 -->
+    <Style Selector="Path.themeIcon">
+      <Setter Property="Width" Value="16"/>
+      <Setter Property="Height" Value="16"/>
+      <Setter Property="Stretch" Value="Uniform"/>
+      <Setter Property="Fill" Value="Transparent"/>
+      <Setter Property="Stroke" Value="{DynamicResource AppTextMutedBrush}"/>
+      <Setter Property="StrokeThickness" Value="1.4"/>
+      <Setter Property="StrokeLineCap" Value="Round"/>
+    </Style>
+
+    <!-- 便携平台密度：5–8 个槽位用 3 列中卡 -->
+    <Style Selector="ItemsControl.medium Border.slot">
+      <Setter Property="Padding" Value="12,10"/>
+    </Style>
+    <Style Selector="ItemsControl.medium TextBlock.slotTitle">
+      <Setter Property="FontSize" Value="13"/>
+    </Style>
+    <Style Selector="ItemsControl.medium Path.padEmpty">
+      <Setter Property="Width" Value="44"/>
+      <Setter Property="Height" Value="44"/>
+      <Setter Property="StrokeThickness" Value="1.5"/>
+    </Style>
+    <Style Selector="ItemsControl.medium Path.padOnline">
+      <Setter Property="Width" Value="44"/>
+      <Setter Property="Height" Value="44"/>
+      <Setter Property="StrokeThickness" Value="1.5"/>
+    </Style>
+    <Style Selector="ItemsControl.medium Path.padReserved">
+      <Setter Property="Width" Value="44"/>
+      <Setter Property="Height" Value="44"/>
+      <Setter Property="StrokeThickness" Value="1.5"/>
+    </Style>
+
+    <!-- 便携平台密度：9–16 个槽位用 4 列紧凑卡 -->
+    <Style Selector="ItemsControl.dense Border.slot">
+      <Setter Property="Padding" Value="10,8"/>
+    </Style>
+    <Style Selector="ItemsControl.dense TextBlock.slotTitle">
+      <Setter Property="FontSize" Value="13"/>
+    </Style>
+    <Style Selector="ItemsControl.dense Path.padEmpty">
+      <Setter Property="Width" Value="34"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="StrokeThickness" Value="1.4"/>
+    </Style>
+    <Style Selector="ItemsControl.dense Path.padOnline">
+      <Setter Property="Width" Value="34"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="StrokeThickness" Value="1.4"/>
+    </Style>
+    <Style Selector="ItemsControl.dense Path.padReserved">
+      <Setter Property="Width" Value="34"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="StrokeThickness" Value="1.4"/>
+    </Style>
+  </Window.Styles>
+
+  <!-- 点空白处主动清焦点：否则文本框不会失焦，光标一直闪 -->
+  <Panel PointerPressed="OnBackgroundPressed">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="20,18,20,0">
+
+      <!-- ═══ 顶部卡：地址 · 端口 / 密码 · 状态 + 电源 ═══ -->
+      <!-- 用行列网格而不是四个独立 StackPanel：三块标签落在同一行，输入框同高，基线才真的齐。 -->
+      <Border Grid.Row="0" Classes="card" Padding="18">
+        <Grid ColumnDefinitions="*,126,196,196" RowDefinitions="Auto,Auto"
+              RowSpacing="6" ColumnSpacing="16">
+
+          <!-- 行 0：三块标签 + 服务状态（运行时长跟状态挤在同一格，不再单独占一行） -->
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding AddrTitleText}"
+                     FontSize="12" Classes="value"/>
+          <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PortLabel}" Classes="caption"/>
+          <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding PasswordLabel}" Classes="caption"/>
+          <StackPanel Grid.Row="0" Grid.Column="3" Orientation="Horizontal" Spacing="8"
+                      VerticalAlignment="Center">
+            <Ellipse Width="9" Height="9" Fill="{DynamicResource AppDangerBrush}"
+                     IsVisible="{Binding IsNotRunning}" VerticalAlignment="Center"/>
+            <Ellipse Width="9" Height="9" Fill="{DynamicResource AppOnlineBrush}"
+                     IsVisible="{Binding IsRunning}" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding StatusText}" FontSize="13" FontWeight="SemiBold"
+                       Classes="value" VerticalAlignment="Center"/>
+            <!-- 运行时长跟在状态右边同一行，不再另起一行撑高卡片 -->
+            <TextBlock Text="{Binding StatusHintText}" Classes="hint"
+                       IsVisible="{Binding IsRunning}" VerticalAlignment="Center"/>
+          </StackPanel>
+
+          <!-- 行 1：地址 + 复制 / 端口 / 密码 / 状态提示 -->
+          <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="10"
+                      VerticalAlignment="Center">
+            <!-- 地址拆成 IP + 端口两段：端口单独上色，扫一眼就知道连的是哪个口 -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="{Binding AddressHostText}" FontSize="28" FontWeight="Bold"
+                         Classes="value" VerticalAlignment="Center"/>
+              <TextBlock Text="{Binding AddressPortText}" FontSize="28" FontWeight="Bold"
+                         Foreground="{DynamicResource AppPortBrush}" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Button Content="{Binding CopyAddressText}"
+                    Command="{Binding CopyAddressCommand}"
+                    Classes="ghost" Padding="10,4" FontSize="11" VerticalAlignment="Center"/>
+          </StackPanel>
+
+          <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Port, Mode=TwoWay}"
+                   IsEnabled="{Binding IsStopped}" MinHeight="34" VerticalAlignment="Center"
+                   LostFocus="OnCredentialsLostFocus"/>
+
+          <TextBox Grid.Row="1" Grid.Column="2" Name="PasswordBox" Text="{Binding Password, Mode=TwoWay}"
+                   IsEnabled="{Binding IsStopped}" MinHeight="34" VerticalAlignment="Center"
+                   LostFocus="OnCredentialsLostFocus">
+            <TextBox.InnerRightContent>
+              <Button Command="{Binding TogglePasswordVisibleCommand}" Classes="inline"
+                      Padding="6,2" ToolTip.Tip="{Binding PasswordToggleText}">
+                <Panel>
+                  <Path Classes="eyeIcon" IsVisible="{Binding PasswordVisible}"
+                        Data="M 1.5 8 C 4 4 6.5 2.5 8 2.5 C 9.5 2.5 12 4 14.5 8 C 12 12 9.5 13.5 8 13.5 C 6.5 13.5 4 12 1.5 8 Z M 8 5.8 A 2.2 2.2 0 1 0 8 10.2 A 2.2 2.2 0 1 0 8 5.8 Z"/>
+                  <Path Classes="eyeIcon" IsVisible="{Binding !PasswordVisible}"
+                        Data="M 1.5 8 C 4 4 6.5 2.5 8 2.5 C 9.5 2.5 12 4 14.5 8 C 12 12 9.5 13.5 8 13.5 C 6.5 13.5 4 12 1.5 8 Z M 3 3 L 13 13"/>
+                </Panel>
+              </Button>
+            </TextBox.InnerRightContent>
+          </TextBox>
+
+          <!-- 主按钮与输入框同一行：单独占一行会在卡片底部留出一条空白 -->
+          <Button Grid.Row="1" Grid.Column="3" Content="{Binding PowerButtonText}"
+                  Command="{Binding ToggleServerCommand}"
+                  IsEnabled="{Binding CanTogglePower}"
+                  Classes="accent" Classes.stop="{Binding IsRunning}"
+                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center" MinHeight="38"
+                  FontSize="14" FontWeight="SemiBold"/>
+        </Grid>
+      </Border>
+
+      <!-- ═══ 主体：左列配置 + 驱动，右列槽位（左右两列底边对齐） ═══ -->
+      <Grid Grid.Row="1" ColumnDefinitions="320,16,*" Margin="0,16,0,0">
+
+        <Grid Grid.Column="0" RowDefinitions="*,Auto">
+
+          <!-- 配置：语言下拉 + 二维码（二维码区吃掉剩余高度，卡片和右列等高） -->
+          <Border Grid.Row="0" Classes="card" Padding="18,16">
+            <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
+              <TextBlock Grid.Row="0" Text="{Binding ConfigTitleText}" Classes="section"/>
+              <TextBlock Grid.Row="1" Text="{Binding LangLabel}" Classes="caption"/>
+              <ComboBox Grid.Row="2" Name="LanguageBox" HorizontalAlignment="Stretch"
+                        SelectionChanged="OnLanguageChanged"/>
+
+              <Border Grid.Row="3" CornerRadius="8" Padding="12" Margin="0,6,0,0" ClipToBounds="True"
+                      Background="{DynamicResource AppInsetBrush}">
+                <Panel>
+                  <!-- 未启动：虚线占位，别再摆一块大灰砖 -->
+                  <Rectangle StrokeDashArray="5,4" Stroke="{DynamicResource AppBorderBrush}"
+                             StrokeThickness="1" RadiusX="8" RadiusY="8"
+                             IsVisible="{Binding IsNotRunning}"/>
+                  <!-- 二维码 PNG 自带白底：白卡跟着容器拉伸，图片按 Uniform 撑满可用区域 -->
+                  <Border Background="White" CornerRadius="6" Padding="10"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          IsVisible="{Binding IsRunning}">
+                    <Image Source="{Binding QrBitmap}" Stretch="Uniform"/>
+                  </Border>
+                  <StackPanel IsVisible="{Binding IsNotRunning}" Spacing="10"
+                              HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid Width="30" Height="30" HorizontalAlignment="Center"
+                          ColumnDefinitions="*,*" RowDefinitions="*,*">
+                      <Border Grid.Row="0" Grid.Column="0" Margin="0,0,3,3" CornerRadius="1"
+                              Background="{DynamicResource AppIdleBrush}"/>
+                      <Border Grid.Row="0" Grid.Column="1" Margin="3,0,0,3" CornerRadius="1"
+                              Background="{DynamicResource AppIdleBrush}"/>
+                      <Border Grid.Row="1" Grid.Column="0" Margin="0,3,3,0" CornerRadius="1"
+                              Background="{DynamicResource AppIdleBrush}"/>
+                      <Border Grid.Row="1" Grid.Column="1" Margin="3,3,0,0" CornerRadius="1"
+                              Background="{DynamicResource AppIdleBrush}"/>
+                    </Grid>
+                    <TextBlock Text="{Binding QrHintText}" Classes="hint" HorizontalAlignment="Center"/>
+                  </StackPanel>
+                </Panel>
+              </Border>
+            </Grid>
+          </Border>
+
+          <!-- 驱动检查：压成底部一小块，诊断按需一行显示 -->
+          <Border Grid.Row="1" Classes="card" Padding="16,12" Margin="0,12,0,0">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
+              <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding DriverSectionText}" FontSize="13" FontWeight="SemiBold"
+                           Classes="value" VerticalAlignment="Center"/>
+                <Border Grid.Column="1" CornerRadius="9" Padding="8,2"
+                        Background="{DynamicResource AppChipBrush}">
+                  <TextBlock Text="{Binding DriverStatusText}" FontSize="11"
+                             Classes="value"/>
+                </Border>
+              </Grid>
+
+              <TextBlock Grid.Row="1" Text="{Binding DriverDetailText}" Classes="hint"
+                         TextWrapping="Wrap"/>
+
+              <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6">
+                <!-- Windows 装/卸 ViGEmBus；macOS 只给「安装 OpenJoystickDriver」的引导入口 -->
+                <Button Content="{Binding DriverInstallText}" Classes="mini"
+                        IsVisible="{Binding CanInstallDriver}"
+                        Command="{Binding InstallDriverCommand}"
+                        IsEnabled="{Binding DriverBusy, Converter={x:Static BoolConverters.Not}}"/>
+                <Button Content="{Binding DriverUninstallText}" Classes="mini"
+                        IsVisible="{Binding CanManageDriver}"
+                        Command="{Binding UninstallDriverCommand}"
+                        IsEnabled="{Binding DriverBusy, Converter={x:Static BoolConverters.Not}}"/>
+                <Button Content="{Binding DriverRefreshText}" Classes="mini"
+                        Command="{Binding RefreshDriverStatusCommand}"
+                        IsEnabled="{Binding DriverBusy, Converter={x:Static BoolConverters.Not}}"/>
+              </StackPanel>
+
+              <TextBlock Grid.Row="3" Text="{Binding DriverDiagnostic}" Classes="hint"
+                         TextTrimming="CharacterEllipsis"
+                         ToolTip.Tip="{Binding DriverDiagnostic}"
+                         IsVisible="{Binding DriverDiagnostic, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+            </Grid>
+          </Border>
+        </Grid>
+
+        <!-- 槽位：固定 4 路平台（Windows / macOS）2×2 大卡 / 便携平台 4×4 紧凑卡 -->
+        <Border Grid.Column="2" Classes="card" Padding="18">
+          <Grid RowDefinitions="Auto,*">
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+              <TextBlock Text="{Binding SlotSectionText}" Classes="section" VerticalAlignment="Center"/>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <!-- 固定 4 路平台：XInput 4 个用户槽 / OJD 4 条 feed，真实手柄也占名额 -->
+                <TextBlock Text="{Binding PadLimitText}" Classes="hint"
+                           IsVisible="{Binding IsFourPadLayout}" VerticalAlignment="Center"/>
+                <Border CornerRadius="9" Padding="8,2" Background="{DynamicResource AppChipBrush}">
+                  <TextBlock Text="{Binding SlotCountText}" FontSize="11" Classes="value"/>
+                </Border>
+                <!-- 便携平台：默认 4 个，可加可删（1–16）；服务运行中容量已定死，两个都禁用 -->
+                <Button Content="{Binding RemoveSlotText}" Command="{Binding RemoveSlotCommand}"
+                        Classes="mini" IsVisible="{Binding IsPortableLayout}"
+                        IsEnabled="{Binding CanRemoveSlot}"/>
+                <Button Content="{Binding AddSlotText}" Command="{Binding AddSlotCommand}"
+                        Classes="mini" IsVisible="{Binding IsPortableLayout}"
+                        IsEnabled="{Binding CanAddSlot}"/>
+              </StackPanel>
+            </Grid>
+
+            <ItemsControl Grid.Row="1" Margin="0,0,-12,-12" ItemsSource="{Binding Slots}"
+                          Classes.medium="{Binding IsSlotsMedium}"
+                          Classes.dense="{Binding IsSlotsDense}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <UniformGrid Columns="{Binding SlotColumns}"/>
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:SlotViewModel">
+                  <Border Classes="slot" Margin="0,0,12,12" Padding="16,14">
+                    <Grid RowDefinitions="Auto,*,Auto">
+
+                      <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+                        <TextBlock Grid.Column="0" Text="{Binding IndexText}" Classes="hint"
+                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding TitleText}" Classes="slotTitle value"
+                                   FontWeight="SemiBold" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6"
+                                    VerticalAlignment="Center">
+                          <!-- 系统手柄占用：红点 -->
+                          <Ellipse Width="7" Height="7" Fill="{DynamicResource AppDangerBrush}"
+                                   IsVisible="{Binding IsReserved}" VerticalAlignment="Center"/>
+                          <Ellipse Width="7" Height="7" Fill="{DynamicResource AppOnlineBrush}"
+                                   IsVisible="{Binding Occupied}" VerticalAlignment="Center"/>
+                          <Ellipse Width="7" Height="7" Fill="{DynamicResource AppIdleBrush}"
+                                   IsVisible="{Binding IsPlainFree}" VerticalAlignment="Center"/>
+                          <TextBlock Text="{Binding BadgeText}" Classes="hint"/>
+                        </StackPanel>
+                      </Grid>
+
+                      <!-- 未连接：灰色大手柄 -->
+                      <Path Grid.Row="1" Classes="padEmpty" IsVisible="{Binding IsPlainFree}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Data="M 6.5 5 H 17.5 A 5.5 5.5 0 0 1 23 10.8 L 21.6 18.2 A 2.9 2.9 0 0 1 16.5 19.3 L 15 16.4 H 9 L 7.5 19.3 A 2.9 2.9 0 0 1 2.4 18.2 L 1 10.8 A 5.5 5.5 0 0 1 6.5 5 Z M 5.6 11.6 L 9.6 11.6 M 7.6 9.6 L 7.6 13.6 M 16.2 10.4 L 16.2 10.6 M 18.4 12.2 L 18.4 12.4"/>
+
+                      <!-- 系统手柄占用：红色大手柄 -->
+                      <Path Grid.Row="1" Classes="padReserved" IsVisible="{Binding IsReserved}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Data="M 6.5 5 H 17.5 A 5.5 5.5 0 0 1 23 10.8 L 21.6 18.2 A 2.9 2.9 0 0 1 16.5 19.3 L 15 16.4 H 9 L 7.5 19.3 A 2.9 2.9 0 0 1 2.4 18.2 L 1 10.8 A 5.5 5.5 0 0 1 6.5 5 Z M 5.6 11.6 L 9.6 11.6 M 7.6 9.6 L 7.6 13.6 M 16.2 10.4 L 16.2 10.6 M 18.4 12.2 L 18.4 12.4"/>
+
+                      <!-- 已连接：绿色大手柄 + 设备小字 -->
+                      <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="6"
+                                  IsVisible="{Binding Occupied}">
+                        <Path Classes="padOnline" HorizontalAlignment="Center"
+                              Data="M 6.5 5 H 17.5 A 5.5 5.5 0 0 1 23 10.8 L 21.6 18.2 A 2.9 2.9 0 0 1 16.5 19.3 L 15 16.4 H 9 L 7.5 19.3 A 2.9 2.9 0 0 1 2.4 18.2 L 1 10.8 A 5.5 5.5 0 0 1 6.5 5 Z M 5.6 11.6 L 9.6 11.6 M 7.6 9.6 L 7.6 13.6 M 16.2 10.4 L 16.2 10.6 M 18.4 12.2 L 18.4 12.4"/>
+                        <TextBlock Text="{Binding DetailText}" Classes="hint"
+                                   HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                      </StackPanel>
+
+                      <!-- 空槽不显示按钮：禁用态的灰字灰底对比度太低，看起来像坏了 -->
+                      <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6"
+                                  HorizontalAlignment="Right">
+                        <Button Content="{Binding DisconnectText}" Classes="mini"
+                                IsVisible="{Binding CanDisconnect}"
+                                Command="{Binding DataContext.DisconnectSlotCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding Slot}"/>
+                        <Button Content="{Binding RemoveText}" Classes="mini"
+                                IsVisible="{Binding CanRemove}"
+                                Command="{Binding DataContext.RemoveDeviceCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding Slot}"/>
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Grid>
+        </Border>
+      </Grid>
+
+      <!-- ═══ 底部：版本 + 主题开关 ═══ -->
+      <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="2,12,2,14">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <TextBlock Text="{Binding VersionText}" Classes="hint"/>
+          <!-- 伪装模式要显眼：否则测试完忘了，会以为 Windows 上真有 16 个槽 -->
+          <TextBlock Text="{Binding PretendText}" Classes="hint"
+                     IsVisible="{Binding IsPortablePretend}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Path Classes="themeIcon" VerticalAlignment="Center"
+                Data="M 10 6.5 A 3.5 3.5 0 1 0 10 13.5 A 3.5 3.5 0 1 0 10 6.5 Z M 10 1.5 L 10 3.5 M 10 16.5 L 10 18.5 M 1.5 10 L 3.5 10 M 16.5 10 L 18.5 10 M 4 4 L 5.4 5.4 M 14.6 14.6 L 16 16 M 16 4 L 14.6 5.4 M 5.4 14.6 L 4 16"/>
+          <ToggleSwitch IsChecked="{Binding IsDark, Mode=TwoWay}"
+                        OnContent="" OffContent="" VerticalAlignment="Center"/>
+          <Path Classes="themeIcon" VerticalAlignment="Center"
+                Data="M 16.5 12.5 A 6.8 6.8 0 1 1 8 3.6 A 5.4 5.4 0 0 0 16.5 12.5 Z"/>
+        </StackPanel>
+      </Grid>
+    </Grid>
+
+    <!-- ═══ toast 浮层 ═══ -->
+    <Border VerticalAlignment="Bottom" HorizontalAlignment="Center"
+            Margin="0,0,0,24" Padding="18,10" CornerRadius="10"
+            Background="{DynamicResource AppChipBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="1"
+            BoxShadow="0 6 22 0 #33000000"
+            IsVisible="{Binding IsToastOpen}" Name="ToastBorder">
+      <TextBlock Text="{Binding ToastMessage}" FontSize="13" Classes="value"/>
+    </Border>
+  </Panel>
+</Window>

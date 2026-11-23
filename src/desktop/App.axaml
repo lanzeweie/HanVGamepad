@@ -1,0 +1,56 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HanVGamepad.Desktop.App"
+             RequestedThemeVariant="Default">
+
+  <!--
+    界面色板：明暗两套实色画刷。
+    不直接用 SystemControlBackground* 系列的原因：Fluent 的 Base/List 系列是半透明叠加色
+    （例如 SystemBaseLowColor 是 #33000000），拿来当窗口或卡片底色会直接透出桌面，
+    在白卡上叠加又会发脏。这里只保留实色，改色点也只有这一处。
+  -->
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+
+        <!-- Default = 浅色；Light 变体没有专属字典时回落到这里。 -->
+        <ResourceDictionary x:Key="Default">
+          <SolidColorBrush x:Key="AppWindowBrush" Color="#F2F3F6"/>
+          <SolidColorBrush x:Key="AppCardBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="AppInsetBrush" Color="#F2F3F6"/>
+          <SolidColorBrush x:Key="AppBorderBrush" Color="#E2E4E9"/>
+          <SolidColorBrush x:Key="AppChipBrush" Color="#EDEFF3"/>
+          <SolidColorBrush x:Key="AppTextBrush" Color="#1C2026"/>
+          <SolidColorBrush x:Key="AppTextSecondaryBrush" Color="#59606C"/>
+          <SolidColorBrush x:Key="AppTextMutedBrush" Color="#858C97"/>
+          <SolidColorBrush x:Key="AppInputBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="AppDangerBrush" Color="#D93B41"/>
+          <SolidColorBrush x:Key="AppOnlineBrush" Color="#2F9E5B"/>
+          <SolidColorBrush x:Key="AppIdleBrush" Color="#AEB4BD"/>
+          <!-- 端口着重色：白底上用深一点的黄，纯黄在浅色底上直接糊成一片 -->
+          <SolidColorBrush x:Key="AppPortBrush" Color="#B8860B"/>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="AppWindowBrush" Color="#17181B"/>
+          <SolidColorBrush x:Key="AppCardBrush" Color="#1E1F24"/>
+          <SolidColorBrush x:Key="AppInsetBrush" Color="#26282D"/>
+          <SolidColorBrush x:Key="AppBorderBrush" Color="#33363C"/>
+          <SolidColorBrush x:Key="AppChipBrush" Color="#2A2C32"/>
+          <SolidColorBrush x:Key="AppTextBrush" Color="#E9EAEC"/>
+          <SolidColorBrush x:Key="AppTextSecondaryBrush" Color="#A3A8B1"/>
+          <SolidColorBrush x:Key="AppTextMutedBrush" Color="#7C828B"/>
+          <SolidColorBrush x:Key="AppInputBrush" Color="#26282D"/>
+          <SolidColorBrush x:Key="AppDangerBrush" Color="#F0595E"/>
+          <SolidColorBrush x:Key="AppOnlineBrush" Color="#3FBF74"/>
+          <SolidColorBrush x:Key="AppIdleBrush" Color="#5A6069"/>
+          <SolidColorBrush x:Key="AppPortBrush" Color="#FFC83D"/>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+  </Application.Styles>
+</Application>

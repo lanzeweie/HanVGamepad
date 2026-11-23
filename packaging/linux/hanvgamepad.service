@@ -1,0 +1,16 @@
+[Unit]
+Description=HanVGamepad gamepad service (headless)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/hanvgamepad/cli/hanvgamepad start --port 5000
+Restart=on-failure
+RestartSec=5
+# 服务本身不需要 root：uinput 权限由 udev rule + input 组保证。
+User=hanvgamepad
+Group=input
+WorkingDirectory=/opt/hanvgamepad
+
+[Install]
+WantedBy=multi-user.target

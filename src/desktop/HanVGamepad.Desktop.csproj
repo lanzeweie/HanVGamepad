@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>HanVGamepad.Desktop</RootNamespace>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0</Version>
+    <Authors>HanVGamepad Contributors</Authors>
+    <Product>HanVGamepad</Product>
+    <Description>Turn any smartphone browser into a virtual PC controller with low latency.</Description>
+    <Copyright>Copyright © 2026 HanVGamepad Contributors</Copyright>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- exe 自身图标：与托盘/窗口共用同一个 .ico，换图标只改生成脚本。 -->
+    <ApplicationIcon>Resources\HanVGamepadIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\server\HanVGamepad.Server.csproj" />
+    <ProjectReference Include="..\driver\HanVGamepad.Driver.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 托盘/窗口图标：必须声明为 Avalonia 资源，avares:// 才能加载。 -->
+    <AvaloniaResource Include="Resources\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 标题栏小图标：运行时用 LoadImage 从磁盘读成 HICON，所以要随程序复制到输出目录。 -->
+    <Content Include="Assets\TitleIcon.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- React SPA 构建产物（web-client/dist → wwwroot）在打包脚本中复制。 -->
+  <ItemGroup>
+    <Content Include="wwwroot\**\*" Condition="Exists('wwwroot')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
